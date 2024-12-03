@@ -1,0 +1,155 @@
+localhost.localdomain :) CREATE TABLE test (uid String, version UInt32, is_deleted UInt8) ENGINE = ReplicatedReplacingMergeTree('/test/jhbsavk', '1', version, is_deleted) Order by (uid);
+
+CREATE TABLE test
+(
+    `uid` String,
+    `version` UInt32,
+    `is_deleted` UInt8
+)
+ENGINE = ReplicatedReplacingMergeTree('/test/jhbsavk', '1', version, is_deleted)
+ORDER BY uid
+
+Query id: 3f384e1f-1d59-42ce-a63f-5be18603c0de
+
+Ok.
+
+0 rows in set. Elapsed: 0.020 sec. 
+
+localhost.localdomain :) CREATE TABLE test2 (uid String, version UInt32, is_deleted UInt8) ENGINE = ReplicatedReplacingMergeTree('/test/jhbsavk', '2', version, is_deleted) Order by (uid);
+
+CREATE TABLE test2
+(
+    `uid` String,
+    `version` UInt32,
+    `is_deleted` UInt8
+)
+ENGINE = ReplicatedReplacingMergeTree('/test/jhbsavk', '2', version, is_deleted)
+ORDER BY uid
+
+Query id: e17fcfe5-82e1-4427-b55e-4623e738eef0
+
+Ok.
+
+0 rows in set. Elapsed: 0.021 sec. 
+
+localhost.localdomain :) system stop replicated sends test2
+
+SYSTEM STOP REPLICATED SENDS test2
+
+Query id: a9b85a4e-fb8c-44fc-957d-ce9461f16307
+
+Ok.
+
+0 rows in set. Elapsed: 0.002 sec. 
+
+localhost.localdomain :) insert into test values (1, 1, 0)
+
+INSERT INTO test FORMAT Values
+
+Query id: 628d3572-5a33-452f-aa72-da0ac7176231
+
+Ok.
+
+1 row in set. Elapsed: 0.010 sec. 
+
+localhost.localdomain :) insert into test2 values (2, 1, 0)
+
+INSERT INTO test2 FORMAT Values
+
+Query id: 9ab422cb-9119-4b91-9ab6-5a34773f22b4
+
+Ok.
+
+1 row in set. Elapsed: 0.009 sec. 
+
+localhost.localdomain :) insert into test values (1, 2, 0)
+
+INSERT INTO test FORMAT Values
+
+Query id: d07dbd54-de65-4aa1-a90a-0091a3949ef6
+
+Ok.
+
+1 row in set. Elapsed: 0.009 sec. 
+
+localhost.localdomain :) insert into test values (1, 3, 1)
+
+INSERT INTO test FORMAT Values
+
+Query id: 527a57c2-b998-4aea-a177-7dddd7c1385c
+
+Ok.
+
+1 row in set. Elapsed: 0.009 sec. 
+
+localhost.localdomain :) select *, _part from test
+
+SELECT
+    *,
+    _part
+FROM test
+
+Query id: 69442060-35c4-4dbf-87ff-582dda6b304c
+
+   ┌─uid─┬─version─┬─is_deleted─┬─_part─────┐
+1. │ 1   │       3 │          1 │ all_3_3_0 │
+   └─────┴─────────┴────────────┴───────────┘
+   ┌─uid─┬─version─┬─is_deleted─┬─_part─────┐
+2. │ 1   │       1 │          0 │ all_0_0_0 │
+   └─────┴─────────┴────────────┴───────────┘
+   ┌─uid─┬─version─┬─is_deleted─┬─_part─────┐
+3. │ 1   │       2 │          0 │ all_2_2_0 │
+   └─────┴─────────┴────────────┴───────────┘
+
+3 rows in set. Elapsed: 0.006 sec. 
+
+localhost.localdomain :) select * from test final
+
+SELECT *
+FROM test
+FINAL
+
+Query id: 2c5e37e9-7cf6-41e6-8784-288fa45ce31f
+
+Ok.
+
+0 rows in set. Elapsed: 0.006 sec. 
+
+localhost.localdomain :) optimize table test cleanup
+
+OPTIMIZE TABLE test CLEANUP
+
+Query id: bbec064c-96d1-4aac-ae1d-08e8f655e722
+
+Ok.
+
+0 rows in set. Elapsed: 0.022 sec. 
+
+localhost.localdomain :) select * from test final
+
+SELECT *
+FROM test
+FINAL
+
+Query id: 0d59a583-d213-4112-b90f-8ac55c01c0cf
+
+   ┌─uid─┬─version─┬─is_deleted─┐
+1. │ 1   │       1 │          0 │
+   └─────┴─────────┴────────────┘
+
+1 row in set. Elapsed: 0.004 sec. 
+
+localhost.localdomain :) select *, _part from test
+
+SELECT
+    *,
+    _part
+FROM test
+
+Query id: 23051302-daa1-401e-9bfa-d98a39f6a18e
+
+   ┌─uid─┬─version─┬─is_deleted─┬─_part─────┐
+1. │ 1   │       1 │          0 │ all_0_0_0 │
+   └─────┴─────────┴────────────┴───────────┘
+
+1 row in set. Elapsed: 0.004 sec. 
